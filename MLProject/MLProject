@@ -1,0 +1,17 @@
+
+name: ML_Model_Training_Project
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    command: "python modelling.py"
+  
+  train:
+    parameters:
+      alpha: {type: float, default: 0.5}
+      l1_ratio: {type: float, default: 0.1}
+    command: "python modelling.py --alpha {alpha} --l1_ratio {l1_ratio}"
+  
+  evaluate:
+    command: "python modelling.py --evaluate-only"

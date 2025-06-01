@@ -1,0 +1,17 @@
+name: ml_model_env
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.9
+  - pip
+  - numpy=1.24.3
+  - pandas=2.1.4
+  - scikit-learn=1.3.2
+  - matplotlib=3.8.2
+  - seaborn=0.13.0
+  - pip:
+      - mlflow==2.8.1
+      - dagshub==0.3.7

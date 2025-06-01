@@ -1,0 +1,87 @@
+name: ML Model Training CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  train-model:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Set up Conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: '3.9'
+          environment-file: MLProject/conda.yaml
+          activate-environment: ml_model_env
+
+      - name: Install MLflow
+        shell: bash -l {0}
+        run: |
+          conda activate ml_model_env
+          pip install mlflow==2.8.1
+
+      - name: Copy data to MLProject folder
+        run: |
+          mkdir -p MLProject/preprocessed-csvs
+          if [ -d "preprocessed-csvs" ]; then
+            cp -r preprocessed-csvs/* MLProject/preprocessed-csvs/
+          fi
+          if [ -d "data" ]; then
+            cp -r data/* MLProject/ 2>/dev/null || true
+          fi
+
+      - name: List MLProject contents
+        run: |
+          echo "MLProject folder contents:"
+          ls -la MLProject/
+          if [ -d "MLProject/preprocessed-csvs" ]; then
+            echo "preprocessed-csvs contents:"
+            ls -la MLProject/preprocessed-csvs/
+          fi
+
+      - name: Run MLflow Project
+        shell: bash -l {0}
+        run: |
+          conda activate ml_model_env
+          cd MLProject
+          mlflow run . --no-conda
+
+      - name: Run MLflow Project with tuning
+        shell: bash -l {0}
+        run: |
+          conda activate ml_model_env
+          cd MLProject
+          python modelling.py --tune
+
+      - name: Check MLflow runs
+        shell: bash -l {0}
+        run: |
+          cd MLProject
+          if [ -d "mlruns" ]; then
+            echo "MLflow runs created successfully"
+            find mlruns -name "*.yaml" | head -5
+          else
+            echo "No MLflow runs found"
+          fi
+
+      - name: Upload MLflow artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: mlflow-runs
+          path: MLProject/mlruns/
+          retention-days: 30
