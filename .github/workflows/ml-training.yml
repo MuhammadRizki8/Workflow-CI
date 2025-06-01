@@ -58,7 +58,7 @@ jobs:
         run: |
           conda activate ml_model_env
           cd MLProject
-          mlflow run . --no-conda
+          mlflow run .
 
       - name: Run MLflow Project with tuning
         shell: bash -l {0}
