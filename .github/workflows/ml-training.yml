@@ -53,19 +53,12 @@ jobs:
             ls -la MLProject/preprocessed-csvs/
           fi
 
-      - name: Run MLflow Project
+      - name: Run ML model training
         shell: bash -l {0}
         run: |
           conda activate ml_model_env
           cd MLProject
-          mlflow run .
-
-      - name: Run MLflow Project with tuning
-        shell: bash -l {0}
-        run: |
-          conda activate ml_model_env
-          cd MLProject
-          python modelling.py --tune
+          python modelling.py
 
       - name: Check MLflow runs
         shell: bash -l {0}
